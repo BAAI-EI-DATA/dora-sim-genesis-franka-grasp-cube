@@ -1,0 +1,26 @@
+[build-system]
+requires = ["uv>=0.1.0", "setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "dora_sim_genesis_franka_grasp_cube"
+version = "0.0.1"
+description = ""
+authors = [
+    {name = "Xiang Yang", email = "ryu-yang@qq.com"}
+]
+readme = "README.md"
+requires-python = ">=3.10,<3.14"
+dependencies = [
+    "dora-rs (>=0.3.11,<0.4.0)",
+    "genesis-world>=0.3.7",
+]
+
+[tool.setuptools]
+packages = ["src"]
+
+[project.optional-dependencies]
+view = [
+    "dora-rs-cli",
+    "dora-rerun",
+]
