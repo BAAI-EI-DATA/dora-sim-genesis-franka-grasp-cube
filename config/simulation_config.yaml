@@ -1,0 +1,73 @@
+# 仿真环境配置
+simulation:
+  # 场景设置
+  plane_enabled: true
+  cube:
+    size: [0.05, 0.05, 0.05]
+    position: [0.4, 0.0, 0.00]
+  
+  # 相机设置
+  camera:
+    resolution: [640, 480]
+    position: [1.0, 0.0, 1.0]
+    lookat: [0, 0, 0]
+    fov: 60
+    gui_enabled: false
+
+# 机械臂控制配置
+robot:
+  # 控制增益
+  kp_gains: [4500, 4500, 3500, 3500, 2000, 2000, 2000, 100, 100]
+  kv_gains: [450, 450, 350, 350, 200, 200, 200, 10, 10]
+  
+  # 力范围
+  force_min: [-87, -87, -87, -87, -12, -12, -12, -100, -100]
+  force_max: [87, 87, 87, 87, 12, 12, 12, 100, 100]
+  
+  # 关节定义
+  motor_dofs: [0, 1, 2, 3, 4, 5, 6]  # 7个电机关节
+  finger_dofs: [7, 8]  # 2个夹爪关节
+
+# 键盘控制配置
+keyboard:
+  # 移动步长
+  position_step: 0.002
+  orientation_step: 0.005  # 弧度
+  
+  # 夹爪力控制
+  gripper_close_force: [-3.0, -3.0]
+  gripper_open_force: [3.0, 3.0]
+  
+  # 初始位置和姿态
+  initial_position: [0.4, 0.0, 0.4]
+  initial_euler: [3.141592653589793, 0.0, 0.0]  # π, 0, 0
+
+# 运动规划配置
+motion:
+  # 初始路径规划
+  initial_path_waypoints: 200
+  initial_wait_steps: 100
+  
+  # 控制频率
+  target_frequency_hz: 60
+
+# 性能监控配置
+performance:
+  # 统计窗口大小
+  stats_window_size: 100
+  
+  # 打印间隔
+  print_interval: 100
+  
+  # 启用/禁用各项统计
+  enable_step_stats: true
+  enable_render_stats: true
+  enable_tick_stats: true
+
+# 线程配置
+threading:
+  # 控制线程超时
+  step_thread_timeout: 2.0
+  
+  # 队列超时时间
+  queue_timeout: 0.2
