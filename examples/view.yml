@@ -1,0 +1,19 @@
+nodes:
+  - id: dora_sim_genesis_franka_grasp_cube
+    path: ../src/main.py
+    inputs:
+      tick: dora/timer/millis/1
+      tick_image: dora/timer/millis/30
+    outputs:
+      - image
+
+  - id: rerun
+    path: dora-rerun
+    inputs:
+      image: dora_sim_genesis_franka_grasp_cube/image
+
+  # - id: print_joint
+  #   path: ../dora_arm_so101/print_joint.py
+  #   inputs:
+  #     joint: arm_so101_follower/joint
+
