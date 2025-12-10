@@ -69,5 +69,5 @@ threading:
   # 控制线程超时
   step_thread_timeout: 2.0
   
-  # 队列超时时间
-  queue_timeout: 0.2
+  # 队列超时时间 - 减少到1毫秒以减少等待延迟
+  queue_timeout: 0.001

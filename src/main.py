@@ -182,7 +182,7 @@ class FrankaSimulation:
     def step_thread_func(self):
         """控制线程函数"""
         last_step_time = time.perf_counter()
-        render_counter = 0
+        data_counter = 0
         
         while not self.should_exit.is_set():
             try:
@@ -233,9 +233,9 @@ class FrankaSimulation:
                 
                 # 渲染相机图像（每2次循环渲染一次以平衡性能）
                 render_data = None
-                render_counter += 1
-                if render_counter >= 4:  # 控制渲染频率
-                    render_counter = 0
+                data_counter += 1
+                if data_counter >= 4:  # 控制队列数据返回频率
+                    data_counter = 0
                     render_start = time.perf_counter()
                     rgb, _, _, _ = self.cam.render()
                     render_end = time.perf_counter()
@@ -247,12 +247,12 @@ class FrankaSimulation:
                         'render_time': render_end - render_start
                     }
                 
-                # 将统计数据发送回主线程
-                self.step_data_queue.put({
-                    'step_time': step_end - step_start,
-                    'step_interval': step_interval,
-                    'render_data': render_data
-                })
+                    # 将统计数据发送回主线程
+                    self.step_data_queue.put({
+                        'step_time': step_end - step_start,
+                        'step_interval': step_interval,
+                        'render_data': render_data
+                    })
                     
             except Exception as e:
                 print(f"控制线程错误: {e}")
@@ -305,36 +305,48 @@ class FrankaSimulation:
         print("=" * 50)
     
     def process_tick_event(self):
-        """处理tick事件"""
+        """处理tick事件 - 使用非阻塞获取和最新帧缓冲"""
         # 计算 tick 间隔时间
         current_time = time.perf_counter()
         tick_interval = current_time - self.last_tick_time
         self.tick_intervals.append(tick_interval)
         self.last_tick_time = current_time
         
-        # 从线程获取统计数据
-        threading_config = self.config['threading']
+        # 非阻塞获取最新数据
+        latest_data = None
         try:
-            step_data = self.step_data_queue.get(timeout=threading_config['queue_timeout'])
-            self.step_times.append(step_data['step_time'])
-            self.step_intervals.append(step_data['step_interval'])
+            # 尝试获取数据，但不阻塞
+            step_data = self.step_data_queue.get_nowait()
             
-            # 处理渲染数据（如果存在）
+            # 只保留包含渲染数据的最新帧
             if step_data.get('render_data') is not None:
-                render_data = step_data['render_data']
-                self.render_times.append(render_data['render_time'])
+                latest_data = step_data
+            else:
+                # 对于不包含渲染数据的帧，仍然更新性能统计
+                self.step_times.append(step_data['step_time'])
+                self.step_intervals.append(step_data['step_interval'])
                 
-                # 发送彩色图像
-                rgb_image = render_data['rgb_image']
-                ret, frame = cv2.imencode("." + "jpeg", rgb_image)
-                if ret:
-                    self.node.send_output(
-                        "image",
-                        pa.array(frame),
-                        {"encoding": "jpeg", "width": int(640), "height": int(480)},
-                    )
         except Exception:
-            pass
+            # 队列为空，跳出此次tick事件
+            return
+        
+        # 处理最新的渲染数据（如果存在）
+        if latest_data is not None:
+            self.step_times.append(latest_data['step_time'])
+            self.step_intervals.append(latest_data['step_interval'])
+            
+            render_data = latest_data['render_data']
+            self.render_times.append(render_data['render_time'])
+            
+            # 发送彩色图像
+            rgb_image = render_data['rgb_image']
+            ret, frame = cv2.imencode("." + "jpeg", rgb_image)
+            if ret:
+                self.node.send_output(
+                    "image",
+                    pa.array(frame),
+                    {"encoding": "jpeg", "width": int(640), "height": int(480)},
+                )
     
     def run(self):
         """运行主循环"""
