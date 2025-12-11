@@ -5,6 +5,7 @@ nodes:
       tick: dora/timer/millis/30 
     outputs:
       - image
+      - joint_position
 
   - id: rerun
     path: dora-rerun
@@ -20,8 +21,8 @@ nodes:
         source: dora_sim_genesis_franka_grasp_cube/image
         queue_size: 1
 
-  # - id: print_joint
-  #   path: ../dora_arm_so101/print_joint.py
-  #   inputs:
-  #     joint: arm_so101_follower/joint
+  - id: print_joint
+    path: ../src/print_joint.py
+    inputs:
+      joint: dora_sim_genesis_franka_grasp_cube/joint_position
 

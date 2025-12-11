@@ -233,12 +233,17 @@ class FrankaSimulation:
                 
                 # 渲染相机图像（每2次循环渲染一次以平衡性能）
                 render_data = None
+                position_data = None
                 data_counter += 1
-                if data_counter >= 4:  # 控制队列数据返回频率
+                if data_counter >= 4:  # 控制数据频率
                     data_counter = 0
                     render_start = time.perf_counter()
                     rgb, _, _, _ = self.cam.render()
                     render_end = time.perf_counter()
+
+                    # 获取机械臂位置数据
+                    position_data = self.franka.get_dofs_position()
+                    # print("position_data: ", position_data)
                     
                     # 将RGB图像转换为BGR格式用于OpenCV
                     rgb_image = cv2.cvtColor(rgb, cv2.COLOR_BGR2RGB)
@@ -247,11 +252,12 @@ class FrankaSimulation:
                         'render_time': render_end - render_start
                     }
                 
-                    # 将统计数据发送回主线程
+                    # 将数据发送回主线程
                     self.step_data_queue.put({
                         'step_time': step_end - step_start,
                         'step_interval': step_interval,
-                        'render_data': render_data
+                        'render_data': render_data,
+                        'position_data': position_data
                     })
                     
             except Exception as e:
@@ -346,6 +352,27 @@ class FrankaSimulation:
                     "image",
                     pa.array(frame),
                     {"encoding": "jpeg", "width": int(640), "height": int(480)},
+                )
+            
+            # 发送位置数据（如果存在）
+            position_data = latest_data.get('position_data')
+            if position_data is not None:
+                # 将位置数据转换为numpy数组（如果还不是）
+                if hasattr(position_data, 'cpu'):
+                    # 如果是PyTorch tensor，转换为numpy
+                    position_np = position_data.cpu().numpy()
+                elif hasattr(position_data, 'numpy'):
+                    # 如果是TensorFlow tensor，转换为numpy
+                    position_np = position_data.numpy()
+                else:
+                    # 假设已经是numpy数组或类似结构
+                    position_np = np.array(position_data)
+                
+                # 发送位置数据
+                self.node.send_output(
+                    "joint_position",
+                    pa.array(position_np),
+                    {"shape": list(position_np.shape), "dtype": str(position_np.dtype)}
                 )
     
     def run(self):

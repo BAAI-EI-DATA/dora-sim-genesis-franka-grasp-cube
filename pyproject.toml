@@ -3,8 +3,8 @@ requires = ["uv>=0.1.0", "setuptools>=61", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "dora_sim_genesis_franka_grasp_cube"
-version = "0.0.1"
+name = "dora-sim-genesis-franka-grasp-cube"
+version = "0.0.2"
 description = ""
 authors = [
     {name = "Xiang Yang", email = "ryu-yang@qq.com"}
