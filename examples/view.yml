@@ -14,12 +14,12 @@ nodes:
         source: dora_sim_genesis_franka_grasp_cube/image
         queue_size: 1
 
-  - id: plot
-    path: opencv-plot
-    inputs:
-      image:
-        source: dora_sim_genesis_franka_grasp_cube/image
-        queue_size: 1
+  # - id: plot
+  #   path: opencv-plot
+  #   inputs:
+  #     image:
+  #       source: dora_sim_genesis_franka_grasp_cube/image
+  #       queue_size: 1
 
   - id: print_joint
     path: ../src/print_joint.py
